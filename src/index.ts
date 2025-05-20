@@ -8,6 +8,7 @@ import {
   updateProject,
   addProject,
   dropDatabase,
+  getUserToken,
 } from "./db";
 import { D1Database } from "@cloudflare/workers-types";
 import { cookieCheck } from "./auth";
@@ -35,12 +36,11 @@ app.use(
   })
 );
 
-
 app.get("/", (c) => {
   return c.text("hola da Worker is working abbarently");
 });
 
-app.get("/api/projects",async (c) => {
+app.get("/api/projects", async (c) => {
   try {
     const projects = await getProjects(c.env);
     if (!projects) {
@@ -90,7 +90,7 @@ app.get("/api/projects/:id", async (c) => {
 //   }
 // });
 
-app.post("/api/projects",cookieCheck, async (c) => {
+app.post("/api/projects", cookieCheck, async (c) => {
   try {
     const project = await c.req.json();
     const newProject = await addProject(project, c.env);
@@ -104,7 +104,7 @@ app.post("/api/projects",cookieCheck, async (c) => {
   }
 });
 
-app.put("/api/projects/:id",cookieCheck, async (c) => {
+app.put("/api/projects/:id", cookieCheck, async (c) => {
   try {
     const id = c.req.param("id");
     const project = await c.req.json();
@@ -122,7 +122,7 @@ app.put("/api/projects/:id",cookieCheck, async (c) => {
   }
 });
 
-app.delete("/api/projects/:id",cookieCheck, async (c) => {
+app.delete("/api/projects/:id", cookieCheck, async (c) => {
   try {
     const id = c.req.param("id");
     const deletedProject = await deleteProject(Number(id), c.env);
@@ -134,6 +134,22 @@ app.delete("/api/projects/:id",cookieCheck, async (c) => {
     console.error("Error deleting project:", error);
     return c.json(
       { error: "Failed to delete project", details: error.message },
+      500
+    );
+  }
+});
+
+app.get("/api/user-token", async (c) => {
+  try {
+    const token = await getUserToken(c.env);
+    if (!token) {
+      return c.json({ error: "No token found" }, 404);
+    }
+    return c.json(token);
+  } catch (error: any) {
+    console.error("Error fetching user token:", error);
+    return c.json(
+      { error: "Failed to fetch user token", details: error.message },
       500
     );
   }
