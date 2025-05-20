@@ -11,7 +11,7 @@ import {
   getUserToken,
 } from "./db";
 import { D1Database } from "@cloudflare/workers-types";
-import { cookieCheck } from "./auth";
+import { authCheck, cookieCheck } from "./auth";
 
 interface Env {
   [key: string]: unknown;
@@ -145,7 +145,7 @@ app.get("/api/user-token", async (c) => {
     if (!token) {
       return c.json({ error: "No token found" }, 404);
     }
-    return c.json(token);
+    return c.json({ token });
   } catch (error: any) {
     console.error("Error fetching user token:", error);
     return c.json(
@@ -154,6 +154,8 @@ app.get("/api/user-token", async (c) => {
     );
   }
 });
+
+app.get("/api/auth/is-valid/:token", authCheck);
 
 // app.get("/api/drop", async (c) => {
 //   try {
