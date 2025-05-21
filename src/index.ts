@@ -25,7 +25,7 @@ const app = new Hono<{ Bindings: AppEnv }>();
 
 app.use("/api/*", cors(
   {
-    origin: "https://kichu.space",
+    origin: "https://www.kichu.space",
     allowHeaders: ["content-type", "X-Custom-Header", "Authorization"],
     allowMethods: ["POST", "GET", "OPTIONS", "DELETE", "PUT"],
     exposeHeaders: ["Content-Length", "X-Kuma-Revision"],
@@ -35,7 +35,7 @@ app.use("/api/*", cors(
 app.use(
   "/api/v2/*",
   cors({
-    origin: "https://kichu.space",
+    origin: "https://www.kichu.space",
     allowHeaders: ["X-Custom-Header", "Upgrade-Insecure-Requests"],
     allowMethods: ["POST", "GET", "OPTIONS"],
     exposeHeaders: ["Content-Length", "X-Kuma-Revision"],
