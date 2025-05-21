@@ -203,11 +203,9 @@ export async function updateProject(
     const db = getDb(env);
     const result = await db
       .prepare(
-        `
-      UPDATE projects
-      SET title = ?, description = ?, tech = ?, features = ?, links = ?, collaborators = ?
-      WHERE id = ?
-    `
+        `UPDATE projects
+          SET title = ?, description = ?, tech = ?, features = ?, links = ?, collaborators = ?
+          WHERE id = ?`
       )
       .bind(
         project.title,
