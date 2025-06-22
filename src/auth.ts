@@ -9,8 +9,15 @@ export async function cookieCheck(c: Context, next: any): Promise<any> {
     ?.split("=")[1]
     .trim();
 
+  console.log("Cookie:", cookie);
+  console.log("Header:", c.req.header("cookie"));
+
+  if (!cookie) {
+    return c.json({ error: "Unauthorized",test:JSON.stringify(c.req.header("cookie")) }, 401);
+  }
+
   const isValid: boolean | null = await checkUserToken(cookie, c.env);
-  if (!cookie || !isValid) return c.json({ error: "Unauthorized" }, 401);
+  if (!isValid) return c.json({ error: "Unauthorized",test:JSON.stringify(c.req.header("cookie")) }, 401);
   return next();
 }
 
