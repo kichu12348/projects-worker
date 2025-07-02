@@ -29,9 +29,10 @@ const app = new Hono<{ Bindings: AppEnv }>();
 app.use(
   "/api/*",
   cors({
-    origin: "*",
+    origin: "https://www.kichu.space",
     allowHeaders: ["content-type", "Authorization"],
-    allowMethods: ["POST", "GET", "OPTIONS", "DELETE", "PUT"],
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    maxAge: 3600,
     credentials: true,
   })
 );
