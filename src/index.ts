@@ -9,6 +9,9 @@ import {
   addProject,
   dropDatabase,
   getUserToken,
+  addContactFormEntry,
+  getContactFormEntries,
+  initDatabase,
 } from "./db";
 import { D1Database } from "@cloudflare/workers-types";
 import { authCheck, cookieCheck } from "./auth";
@@ -169,6 +172,57 @@ app.get("/api/auth/is-valid/:token", authCheck);
 //     );
 //   }
 // });
+
+app.get("/api/init", async (c) => {
+  try {
+    const result = await initDatabase(c.env);
+    if (!result) {
+      return c.json({ message: "Database already initialized" });
+    }
+    return c.json({ message: "Database initialized successfully" });
+  } catch (error: any) {
+    console.error("Error initializing database:", error);
+    return c.json(
+      { error: "Failed to initialize database", details: error.message },
+      500
+    );
+  }
+});
+
+app.post("/api/contact-form", async (c) => {
+  try {
+    const contactFormData = await c.req.json();
+    const result = await addContactFormEntry(contactFormData, c.env);
+
+    if (!result) {
+      return c.json({ error: "Failed to add contact form entry" }, 500);
+    }
+
+    return c.json({ message: "Contact form entry added successfully" }, 201);
+  } catch (error: any) {
+    console.error("Error processing contact form:", error);
+    return c.json(
+      { error: "Failed to process contact form", details: error.message },
+      500
+    );
+  }
+});
+
+app.get("/api/contact-form", async (c) => {
+  try {
+    const entries = await getContactFormEntries(c.env);
+    if (!entries || entries.length === 0) {
+      return c.json({ message: "No contact form entries found" }, 404);
+    }
+    return c.json(entries);
+  } catch (error: any) {
+    console.error("Error fetching contact form entries:", error);
+    return c.json(
+      { error: "Failed to fetch contact form entries", details: error.message },
+      500
+    );
+  }
+});
 
 // Debug endpoint to check environment
 app.get("/debug/env", (c) => {

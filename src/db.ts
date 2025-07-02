@@ -1,6 +1,22 @@
 import { initialProjects, Project } from "./seed";
 import { D1Database } from "@cloudflare/workers-types";
 
+export async function initDatabase(env?: any): Promise<boolean | void> {
+  const db = getDb(env);
+  try {
+    await db.exec(
+      "CREATE TABLE IF NOT EXISTS projects (id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT NOT NULL,description TEXT NOT NULL,tech TEXT NOT NULL,features TEXT NOT NULL,links TEXT NOT NULL,collaborators TEXT)"
+    );
+    await db.exec(
+      "CREATE TABLE IF NOT EXISTS contact_form (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,email TEXT NOT NULL,message TEXT,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
+    );
+    return true;
+  } catch (error) {
+    console.error("Error initializing database:", error);
+    throw error;
+  }
+}
+
 export function getDb(env?: any): D1Database {
   if (process.env.NODE_ENV === "development" && (!env || !env.DB)) {
     return {
@@ -39,7 +55,15 @@ export async function seedProjects(env?: any): Promise<boolean> {
         features TEXT NOT NULL,
         links TEXT NOT NULL,
         collaborators TEXT
-      )
+      );
+
+      CREATE TABLE IF NOT EXISTS contact_form (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        message TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
     `
       )
       .run();
@@ -303,6 +327,59 @@ export async function checkUserToken(
     return isValid;
   } catch (error) {
     console.error("Error checking user token:", error);
+    throw error;
+  }
+}
+
+interface ContactFormEntry {
+  name: string;
+  email: string;
+  message: string;
+}
+
+//contact form functions
+
+export async function addContactFormEntry(
+  entry: ContactFormEntry,
+  env?: any
+): Promise<any | null> {
+  try {
+    const db = getDb(env);
+    const result = await db
+      .prepare(
+        `
+      INSERT INTO contact_form (name, email, message)
+      VALUES (?, ?, ?)
+    `
+      )
+      .bind(entry.name, entry.email, entry.message)
+      .run();
+
+    return result;
+  } catch (error) {
+    console.error("Error adding contact form entry:", error);
+    throw error;
+  }
+}
+
+export async function getContactFormEntries(
+  env?: any
+): Promise<ContactFormEntry[] | null> {
+  try {
+    const db = getDb(env);
+    const entries = await db.prepare("SELECT * FROM contact_form").all();
+
+    if (!entries.results || entries.results.length === 0) {
+      return null;
+    }
+
+    return entries.results.map((entry: any) => ({
+      name: entry.name,
+      email: entry.email,
+      message: entry.message,
+    }));
+  } catch (error) {
+    console.error("Error getting contact form entries:", error);
     throw error;
   }
 }

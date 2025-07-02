@@ -2,22 +2,15 @@ import { Context } from "hono";
 import { checkUserToken } from "./db";
 
 export async function cookieCheck(c: Context, next: any): Promise<any> {
-  const cookie = c.req
-    .header("cookie")
-    ?.split(";")
-    .find((c) => c.trim().startsWith("admin-auth="))
-    ?.split("=")[1]
-    .trim();
+  const authHeader = c.req.header("Authorization");
+  const token = authHeader ? authHeader.split(" ")[1] : undefined;
 
-  console.log("Cookie:", cookie);
-  console.log("Header:", c.req.header("cookie"));
-
-  if (!cookie) {
-    return c.json({ error: "Unauthorized",test:JSON.stringify(c.req.header("cookie")) }, 401);
+  if (!token) {
+    return c.json({ error: "Unauthorized", test: JSON.stringify(c.req.header("cookie")) }, 401);
   }
 
-  const isValid: boolean | null = await checkUserToken(cookie, c.env);
-  if (!isValid) return c.json({ error: "Unauthorized",test:JSON.stringify(c.req.header("cookie")) }, 401);
+  const isValid: boolean | null = await checkUserToken(token, c.env);
+  if (!isValid) return c.json({ error: "Unauthorized", test: JSON.stringify(c.req.header("cookie")) }, 401);
   return next();
 }
 
