@@ -27,13 +27,11 @@ type AppEnv = Env & {
 const app = new Hono<{ Bindings: AppEnv }>();
 
 app.use(
-  "/api/*",
+  "/*",
   cors({
-    origin: "https://www.kichu.space",
-    allowHeaders: ["content-type", "Authorization"],
-    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    maxAge: 3600,
-    credentials: true,
+    origin: "*",
+    allowMethods: ["GET", "POST", "PUT", "DELETE"],
+    allowHeaders: ["Content-Type", "Authorization"],
   })
 );
 
